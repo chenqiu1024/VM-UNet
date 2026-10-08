@@ -38,7 +38,10 @@ class NPY_datasets(Dataset):
     def __getitem__(self, indx):
         img_path, msk_path = self.data[indx]
         img = np.array(Image.open(img_path).convert('RGB'))
-        msk = np.expand_dims(np.array(Image.open(msk_path).convert('L')), axis=2) / 255
+        msk0 = np.array(Image.open(msk_path).convert('L'))
+        msk = np.expand_dims(msk0, axis=2) / 255
+        print('msk0.shape:', msk0.shape)
+        print('msk.shape:', msk.shape)
         img, msk = self.transformer((img, msk))
         return img, msk
 
@@ -79,7 +82,7 @@ class RandomGenerator(object):
         if x != self.output_size[0] or y != self.output_size[1]:
             image = zoom(image, (self.output_size[0] / x, self.output_size[1] / y), order=3)  # why not 3?
             label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), order=0)
-        image = torch.from_numpy(image.astype(np.float32)).unsqueeze(0)
+        image = torch.from_numpy(image.astype(np.float32)).unsqueeze(0) # why unsqueeze(0)?
         label = torch.from_numpy(label.astype(np.float32))
         sample = {'image': image, 'label': label.long()}
         return sample
