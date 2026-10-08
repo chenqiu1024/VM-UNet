@@ -40,8 +40,8 @@ class NPY_datasets(Dataset):
         img = np.array(Image.open(img_path).convert('RGB'))
         msk0 = np.array(Image.open(msk_path).convert('L'))
         msk = np.expand_dims(msk0, axis=2) / 255
-        print('msk0.shape:', msk0.shape)
-        print('msk.shape:', msk.shape)
+        # print('msk0.shape:', msk0.shape)
+        # print('msk.shape:', msk.shape)
         img, msk = self.transformer((img, msk))
         return img, msk
 
