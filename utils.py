@@ -238,7 +238,17 @@ def get_scheduler(config, optimizer):
 
 
 
-def save_imgs(img, msk, msk_pred, i, save_path, datasets, threshold=0.5, test_data_name=None):
+def per_sample_dice(msk, msk_pred, threshold=0.5):
+    gt = np.where(np.squeeze(msk, axis=0) > 0.5, 1, 0)
+    pred = np.where(np.squeeze(msk_pred, axis=0) > threshold, 1, 0)
+    intersection = np.logical_and(gt == 1, pred == 1).sum()
+    denom = int((gt == 1).sum() + (pred == 1).sum())
+    if denom == 0:
+        return 1.0
+    return float(2.0 * intersection / denom)
+
+
+def save_imgs(img, msk, msk_pred, i, save_path, datasets, threshold=0.5, test_data_name=None, sample_name=None, dice=None):
     # 处理图像数据
     img = img.squeeze(0).permute(1,2,0).detach().cpu().numpy()
     img = img / 255. if img.max() > 1.1 else img
@@ -252,17 +262,24 @@ def save_imgs(img, msk, msk_pred, i, save_path, datasets, threshold=0.5, test_da
         msk = np.where(np.squeeze(msk, axis=0) > 0.5, 1, 0)
         msk_pred = np.where(np.squeeze(msk_pred, axis=0) > threshold, 1, 0)
 
-    # 设置画布大小
-    plt.figure(figsize=(10, 20))
+    if dice is None:
+        intersection = np.logical_and(msk == 1, msk_pred == 1).sum()
+        denom = int((msk == 1).sum() + (msk_pred == 1).sum())
+        dice = 1.0 if denom == 0 else float(2.0 * intersection / denom)
 
-    # 调整子图间距，减少白色边框
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0.05, hspace=0.05)
+    # 设置画布大小，顶部留出 DICE 标题
+    fig = plt.figure(figsize=(10, 22))
+    title = f'DICE: {dice:.4f}'
+    if sample_name is not None:
+        title = f'{title}    {sample_name}'
+    fig.suptitle(title, fontsize=22, fontweight='bold', y=0.995)
+    plt.subplots_adjust(left=0, right=1, top=0.94, bottom=0, wspace=0.05, hspace=0.08)
 
     # 原图
     plt.subplot(4, 1, 1)
     plt.imshow(img)
     plt.axis('off')
-    plt.title('Original Image')
+    plt.title('Original Image' if sample_name is None else f'Original Image: {sample_name}')
 
     # Ground Truth 掩码
     plt.subplot(4, 1, 2)
@@ -274,7 +291,12 @@ def save_imgs(img, msk, msk_pred, i, save_path, datasets, threshold=0.5, test_da
     plt.subplot(4, 1, 3)
     plt.imshow(msk_pred, cmap='gray')
     plt.axis('off')
-    plt.title('Predicted Mask')
+    plt.title(f'Predicted Mask    DICE: {dice:.4f}')
+    plt.text(
+        0.02, 0.98, f'DICE: {dice:.4f}',
+        transform=plt.gca().transAxes, va='top', ha='left', fontsize=18, color='black',
+        bbox=dict(facecolor='yellow', edgecolor='black', boxstyle='round', alpha=0.9),
+    )
 
     # 注意力图谱叠加到原图上
     plt.subplot(4, 1, 4)
@@ -286,8 +308,10 @@ def save_imgs(img, msk, msk_pred, i, save_path, datasets, threshold=0.5, test_da
     # 保存图片
     if test_data_name is not None:
         save_path = save_path + test_data_name + '_'
-    plt.savefig(save_path + str(i) + '.png', bbox_inches='tight', pad_inches=0)
+    file_path = save_path + f'{i}_dice{dice:.4f}.png'
+    plt.savefig(file_path, bbox_inches='tight', pad_inches=0.2)
     plt.close()
+    return dice, file_path
     
 
 
