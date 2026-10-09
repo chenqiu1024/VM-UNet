@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import timm
@@ -154,12 +155,21 @@ def main(config):
 
 
     step = 0
+    loss_epochs, train_losses, val_losses = [], [], []
+    history_path = os.path.join(config.work_dir, 'loss_history.npz')
+    if start_epoch > 1 and os.path.exists(history_path):
+        history = np.load(history_path)
+        kept = history['epochs'] < start_epoch
+        loss_epochs = history['epochs'][kept].tolist()
+        train_losses = history['train'][kept].tolist()
+        val_losses = history['val'][kept].tolist()
+
     print('#----------Training----------#')
     for epoch in range(start_epoch, config.epochs + 1):
 
         torch.cuda.empty_cache()
 
-        step = train_one_epoch(
+        step, train_loss = train_one_epoch(
             train_loader,
             model,
             criterion,
@@ -180,6 +190,23 @@ def main(config):
                 logger,
                 config
             )
+        writer.add_scalar('val_loss_epoch', loss, epoch)
+
+        loss_epochs.append(epoch)
+        train_losses.append(train_loss)
+        val_losses.append(loss)
+        np.savez(
+            history_path,
+            epochs=np.array(loss_epochs),
+            train=np.array(train_losses),
+            val=np.array(val_losses),
+        )
+        save_loss_curve(
+            loss_epochs,
+            train_losses,
+            val_losses,
+            os.path.join(config.work_dir, 'loss_curve.png'),
+        )
 
         if loss < min_loss:
             torch.save(model.state_dict(), os.path.join(checkpoint_dir, 'best.pth'))

@@ -78,6 +78,17 @@ class UNet(nn.Module):
         d3 = self.decoder3(d2, e2)
         d4 = self.decoder4(d3, e1)
         y = self.head(d4)
+        # print(f"y.shape: {y.shape}")
+        # print(f"x.shape: {x.shape}")
+        # print(f"e1.shape: {e1.shape}")
+        # print(f"e2.shape: {e2.shape}")
+        # print(f"e3.shape: {e3.shape}")
+        # print(f"e4.shape: {e4.shape}")
+        # print(f"e5.shape: {e5.shape}")
+        # print(f"d1.shape: {d1.shape}")
+        # print(f"d2.shape: {d2.shape}")
+        # print(f"d3.shape: {d3.shape}")
+        # print(f"d4.shape: {d4.shape}")
         if self.out_channels == 1:
             y = torch.sigmoid(y)
         return y

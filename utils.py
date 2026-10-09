@@ -60,6 +60,19 @@ def get_logger(name, log_dir):
     return logger
 
 
+def save_loss_curve(epochs, train_losses, val_losses, save_path):
+    plt.figure(figsize=(8, 5))
+    plt.plot(epochs, train_losses, label='train loss')
+    plt.plot(epochs, val_losses, label='val loss')
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.legend()
+    plt.grid(True, linestyle='--', alpha=0.4)
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+
+
 def log_config_info(config, logger):
     config_dict = config.__dict__
     log_info = f'#----------Config info----------#'

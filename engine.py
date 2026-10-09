@@ -46,8 +46,13 @@ def train_one_epoch(train_loader,
             log_info = f'train: epoch {epoch}, iter:{iter}, loss: {np.mean(loss_list):.4f}, lr: {now_lr}'
             print(log_info)
             logger.info(log_info)
-    scheduler.step() 
-    return step
+    scheduler.step()
+    mean_loss = float(np.mean(loss_list))
+    log_info = f'train epoch: {epoch}, loss: {mean_loss:.4f}'
+    print(log_info)
+    logger.info(log_info)
+    writer.add_scalar('train_loss_epoch', mean_loss, epoch)
+    return step, mean_loss
 
 
 def val_one_epoch(test_loader,
@@ -101,8 +106,8 @@ def val_one_epoch(test_loader,
         log_info = f'val epoch: {epoch}, loss: {np.mean(loss_list):.4f}'
         print(log_info)
         logger.info(log_info)
-    
-    return np.mean(loss_list)
+
+    return float(np.mean(loss_list))
 
 
 def test_one_epoch(test_loader,
