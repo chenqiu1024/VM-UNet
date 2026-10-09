@@ -12,7 +12,7 @@ def _as_pad(padding):
 
 
 class DoubleConv(nn.Sequential):
-    def __init__(self, in_channels, out_channels, kernel_size=3, padding=0):
+    def __init__(self, in_channels, out_channels, kernel_size=3, padding=1):
         padding = _as_pad(padding)
         super(DoubleConv, self).__init__(
             nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding),
@@ -29,24 +29,24 @@ class DecoderBlock(nn.Module):
         self.up = nn.ConvTranspose2d(in_channels, out_channels, 2, stride=2)
         self.conv = DoubleConv(2 * out_channels, out_channels, kernel_size=kernel_size, padding=padding)
 
-    @staticmethod
-    def center_crop(t, target_shape):
-        _, _, th, tw = target_shape
-        _, _, h, w = t.shape
-        dh = (h - th) // 2
-        dw = (w - tw) // 2
-        return t[:, :, dh:dh + th, dw:dw + tw]
+    # @staticmethod
+    # def center_crop(t, target_shape):
+    #     _, _, th, tw = target_shape
+    #     _, _, h, w = t.shape
+    #     dh = (h - th) // 2
+    #     dw = (w - tw) // 2
+    #     return t[:, :, dh:dh + th, dw:dw + tw]
 
     def forward(self, x, skip):
         x = self.up(x)
-        if x.shape[-2:] != skip.shape[-2:]:
-            skip = self.center_crop(skip, x.shape)
+        # if x.shape[-2:] != skip.shape[-2:]:
+        #     skip = self.center_crop(skip, x.shape)
         x = torch.cat([x, skip], dim=1)
         return self.conv(x)
 
 
 class UNet(nn.Module):
-    def __init__(self, in_channels, out_channels, base_channels=64, padding=0):
+    def __init__(self, in_channels, out_channels, base_channels=64, padding=1):
         super(UNet, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
