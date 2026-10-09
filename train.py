@@ -4,13 +4,14 @@ import timm
 from datasets.dataset import NPY_datasets
 from tensorboardX import SummaryWriter
 from models.vmunet.vmunet import VMUNet
+from models.unet import UNet
 
 from engine import *
 import os
 import sys
 
 from utils import *
-from configs.config_setting import setting_config
+from configs.config_setting_unet import setting_config
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -81,11 +82,24 @@ def main(config):
             load_ckpt_path=model_cfg['load_ckpt_path'],
         )
         model.load_from()
-        
+    elif config.network == 'unet':
+        model = UNet(
+            in_channels=model_cfg['input_channels'],
+            out_channels=model_cfg['num_classes'],
+            base_channels=model_cfg['base_channels'],
+            padding=model_cfg['padding'],
+        )
+        if model_cfg['load_ckpt_path'] is not None:
+            checkpoint = torch.load(model_cfg['load_ckpt_path'], map_location=torch.device('cpu'))
+            model.load_state_dict(checkpoint['model_state_dict'])
     else: raise Exception('network in not right!')
     model = model.cuda()
 
-    cal_params_flops(model, 256, logger)
+    if config.network == 'vmunet':
+        cal_params_flops(model, 256, logger)
+    elif config.network == 'unet':
+        ###??? cal_params_flops(model, 572, logger)
+        print("FixMe: Unet is not supported by cal_params_flops for now!")
 
 
 

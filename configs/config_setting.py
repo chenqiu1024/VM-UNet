@@ -16,8 +16,8 @@ class setting_config:
         'depths': [2,2,2,2],
         'depths_decoder': [2,2,2,1],
         'drop_path_rate': 0.2,
-##        'load_ckpt_path': './pre_trained_weights/vmamba_small_e238_ema.pth',
-        'load_ckpt_path': None,
+        'load_ckpt_path': './pre_trained_weights/vmamba_small_e238_ema.pth',
+        # 'load_ckpt_path': None,
     }
 
     datasets = 'isic18' 
@@ -43,7 +43,8 @@ class setting_config:
     rank = None
     amp = False
     gpu_id = '0'
-    batch_size = 32
+    ## batch_size = 32
+    batch_size = 16
     epochs = 300
 
     work_dir = 'results/' + network + '_' + datasets + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'

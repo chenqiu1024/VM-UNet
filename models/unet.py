@@ -38,11 +38,11 @@ class UNet(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        self.conv1 = nn.Conv2d(in_channels, base_channels, kernel_size=3, padding=padding)
-        self.conv2 = nn.Conv2d(base_channels, base_channels * 2, kernel_size=3, padding=padding)
-        self.conv3 = nn.Conv2d(base_channels * 2, base_channels * 4, kernel_size=3, padding=padding)
-        self.conv4 = nn.Conv2d(base_channels * 4, base_channels * 8, kernel_size=3, padding=padding)
-        self.conv5 = nn.Conv2d(base_channels * 8, base_channels * 16, kernel_size=3, padding=padding)
+        self.conv1 = DoubleConv(in_channels, base_channels, kernel_size=3, padding=padding)
+        self.conv2 = DoubleConv(base_channels, base_channels * 2, kernel_size=3, padding=padding)
+        self.conv3 = DoubleConv(base_channels * 2, base_channels * 4, kernel_size=3, padding=padding)
+        self.conv4 = DoubleConv(base_channels * 4, base_channels * 8, kernel_size=3, padding=padding)
+        self.conv5 = DoubleConv(base_channels * 8, base_channels * 16, kernel_size=3, padding=padding)
 
         self.pool = nn.MaxPool2d(2)
     
